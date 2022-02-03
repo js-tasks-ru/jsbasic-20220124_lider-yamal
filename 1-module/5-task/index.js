@@ -7,6 +7,3 @@ function truncate(str, maxlength) {
   }
 
 }
-
-console.log(truncate('Всем привет!', 20));
-console.log(truncate('Вот, что мне хотелось бы сказать на эту тему:', 20));

@@ -1,3 +1,10 @@
 function showSalary(users, age) {
-  // ваш код...
+  let res = '';
+
+  for (let user of users) {
+    if (user.age <= age) {
+      res += `${user.name}, ${user.balance}\n`;
+    }
+  }
+  return res.trim();
 }

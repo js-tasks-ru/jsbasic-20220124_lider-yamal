@@ -3,6 +3,7 @@ function initCarousel() {
   const arrowLeft = document.querySelector(".carousel__arrow_left");
   const carouselInner = document.querySelector(".carousel__inner");
   const slideCount = carouselInner.children.length;
+  console.log('slideCount =', slideCount)
   let currentSlide = 1;
   let pos = 0;
 
@@ -13,24 +14,23 @@ function initCarousel() {
 
   function moveLeft() {
     pos -= carouselInner.offsetWidth;
-    ++currentSlide;
+    --currentSlide;
     setPos();
   }
 
   function moveRigth() {
     pos += carouselInner.offsetWidth;
-    --currentSlide;
+    ++currentSlide;
     setPos();
   }
 
   function setPos() {
-    carouselInner.style.transform = `translateX(${pos}px)`;
+    carouselInner.style.transform = `translateX(-${pos}px)`;
     checkBtn();
   }
 
   function checkBtn() {
-    currentSlide === 1 ? arrowRight.style.display = "none" : arrowRight.style.display = "";
-    currentSlide === slideCount ? arrowLeft.style.display = "none" : arrowLeft.style.display = "";
-    
+    currentSlide === 1 ? arrowLeft.style.display = "none" : arrowLeft.style.display = "";
+    currentSlide === slideCount ? arrowRight.style.display = "none" : arrowRight.style.display = "";
   }
 }

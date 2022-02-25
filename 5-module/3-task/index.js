@@ -3,7 +3,6 @@ function initCarousel() {
   const arrowLeft = document.querySelector(".carousel__arrow_left");
   const carouselInner = document.querySelector(".carousel__inner");
   const slideCount = carouselInner.children.length;
-  console.log('slideCount =', slideCount)
   let currentSlide = 1;
   let pos = 0;
 

@@ -1,7 +1,6 @@
 import createElement from '../../assets/lib/create-element.js';
 import escapeHtml from '../../assets/lib/escape-html.js';
 
-import Modal from '../../7-module/2-task/index.js';
 
 export default class Cart {
   cartItems = []; // [product: {...}, count: N]
@@ -13,30 +12,47 @@ export default class Cart {
   }
 
   addProduct(product) {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    if (!product) 
+      return;
+
+    let cartItem = this.cartItems.find(item => item.product.id === product.id);
+
+    if (!cartItem) {
+      cartItem = { product, count: 1 };
+      this.cartItems.push(cartItem);
+    } else {
+      cartItem.count++;
+    }
+    
+    this.onProductUpdate(cartItem);
   }
 
   updateProductCount(productId, amount) {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    let cartItem = this.cartItems.find(item => item.product.id === productId);
+    if (cartItem) {
+      cartItem.count += +amount;
+      if (cartItem.count === 0) 
+        this.cartItems = this.cartItems.filter(item => item.product.id !== productId);
+      
+      this.onProductUpdate(cartItem);
+    } 
   }
 
   isEmpty() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.length === 0;
   }
 
   getTotalCount() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.reduce((sum, item) => sum + item.count, 0);
   }
 
   getTotalPrice() {
-    // СКОПИРУЙТЕ СЮДЯ СВОЙ КОД
+    return this.cartItems.reduce((sum, item) => sum + item.product.price * item.count, 0);
   }
 
   renderProduct(product, count) {
     return createElement(`
-    <div class="cart-product" data-product-id="${
-      product.id
-    }">
+    <div class="cart-product" data-product-id="${product.id}">
       <div class="cart-product__img">
         <img src="/assets/images/products/${product.image}" alt="product">
       </div>
@@ -73,9 +89,7 @@ export default class Cart {
         <div class="cart-buttons__buttons btn-group">
           <div class="cart-buttons__info">
             <span class="cart-buttons__info-text">total</span>
-            <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(
-              2
-            )}</span>
+            <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(2)}</span>
           </div>
           <button type="submit" class="cart-buttons__button btn-group__button button">order</button>
         </div>
@@ -84,17 +98,66 @@ export default class Cart {
   }
 
   renderModal() {
-    // ...ваш код
+    this.modal = createElement(`
+      <div class="modal">
+        <div class="modal__overlay"></div>
+        <div class="modal__inner">
+          <div class="modal__header">
+            <button type="button" class="modal__close">
+              <img src="/assets/images/icons/cross-icon.svg" alt="close-icon" />
+            </button>
+            <h3 class="modal__title"></h3>
+          </div>
+          <div class="modal__body">A сюда нужно добавлять содержимое тела модального окна</div>
+        </div>
+      </div>`
+    );
   }
 
-  onProductUpdate(cartItem) {
-    // ...ваш код
-
+  onProductUpdate({ product, count }) {
     this.cartIcon.update(this);
+
+    if (!this.modal || !document.body.classList.contains('is-modal-open')) 
+      return;
+    
+    if (this.cartItems.length == 0) {
+      this.modal.close();
+      return;
+    }
+
+    if (count == 0) 
+      this.modalBody.querySelector(`[data-product-id="${product.id}"]`).remove();
+    else {
+      this.modalBody.querySelector(`[data-product-id="${product.id}"] .cart-counter__count`).innerHTML = count;
+      this.modalBody.querySelector(`[data-product-id="${product.id}"] .cart-product__price`).innerHTML = '€' + (count * product.price).toFixed(2);
+    }
+
+    this.modalBody.querySelector(`.cart-buttons__info-price`).innerHTML = '€' + this.getTotalPrice().toFixed(2);
+
   }
 
-  onSubmit(event) {
-    // ...ваш код
+  async onSubmit(event) {
+    event.preventDefault();
+
+    this.modalBody.querySelector('button[type="submit"]').classList.add("is-loading");
+    let form = this.modalBody.querySelector('.cart-form');
+    let userData = new FormData(form);
+
+    await fetch('https://httpbin.org/post', { method: 'POST', body: userData });
+
+    this.modal.setTitle("Success!");
+    this.modalBody.querySelector('button[type="submit"]').classList.remove("is-loading");
+
+    this.cartItems = [];
+    this.cartIcon.update(this);
+
+    this.modalBody.innerHTML = `<div class="modal__body-inner">
+                                  <p>
+                                    Order successful! Your order is being cooked :) <br>
+                                    We’ll notify you about delivery time shortly.<br>
+                                    <img src="/assets/images/delivery.gif">
+                                  </p>
+                                </div>`;
   };
 
   addEventListeners() {

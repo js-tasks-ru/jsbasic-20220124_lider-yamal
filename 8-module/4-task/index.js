@@ -1,6 +1,7 @@
 import createElement from '../../assets/lib/create-element.js';
 import escapeHtml from '../../assets/lib/escape-html.js';
 
+import Modal from '../../7-module/2-task/index.js';
 
 export default class Cart {
   cartItems = []; // [product: {...}, count: N]
@@ -20,10 +21,10 @@ export default class Cart {
     if (!cartItem) {
       cartItem = { product, count: 1 };
       this.cartItems.push(cartItem);
-    } else {
+    } 
+    else 
       cartItem.count++;
-    }
-    
+
     this.onProductUpdate(cartItem);
   }
 
@@ -52,7 +53,9 @@ export default class Cart {
 
   renderProduct(product, count) {
     return createElement(`
-    <div class="cart-product" data-product-id="${product.id}">
+    <div class="cart-product" data-product-id="${
+      product.id
+    }">
       <div class="cart-product__img">
         <img src="/assets/images/products/${product.image}" alt="product">
       </div>
@@ -89,7 +92,9 @@ export default class Cart {
         <div class="cart-buttons__buttons btn-group">
           <div class="cart-buttons__info">
             <span class="cart-buttons__info-text">total</span>
-            <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(2)}</span>
+            <span class="cart-buttons__info-price">€${this.getTotalPrice().toFixed(
+              2
+            )}</span>
           </div>
           <button type="submit" class="cart-buttons__button btn-group__button button">order</button>
         </div>
@@ -98,20 +103,29 @@ export default class Cart {
   }
 
   renderModal() {
-    this.modal = createElement(`
-      <div class="modal">
-        <div class="modal__overlay"></div>
-        <div class="modal__inner">
-          <div class="modal__header">
-            <button type="button" class="modal__close">
-              <img src="/assets/images/icons/cross-icon.svg" alt="close-icon" />
-            </button>
-            <h3 class="modal__title"></h3>
-          </div>
-          <div class="modal__body">A сюда нужно добавлять содержимое тела модального окна</div>
-        </div>
-      </div>`
-    );
+    this.modal = new Modal();
+
+    this.modal.setTitle("Your order");
+
+    this.modalBody = document.createElement(`div`);
+    for (let { product, count } of this.cartItems) {
+      this.modalBody.append(this.renderProduct(product, count));
+    }
+    this.modalBody.append(this.renderOrderForm());
+    this.modalBody.addEventListener("click", (event) => {
+      if (event.target.closest(".cart-counter__button")) {
+        const productElem = event.target.closest("[data-product-id]");
+        const productId = productElem.dataset.productId;
+        this.updateProductCount(
+          productId,
+          event.target.closest(".cart-counter__button_plus") ? 1 : -1
+        );
+      }
+    });
+    this.modalBody.querySelector("form").onsubmit = (event) => this.onSubmit(event);
+    this.modal.setBody(this.modalBody);
+
+    this.modal.open();
   }
 
   onProductUpdate({ product, count }) {
@@ -133,7 +147,6 @@ export default class Cart {
     }
 
     this.modalBody.querySelector(`.cart-buttons__info-price`).innerHTML = '€' + this.getTotalPrice().toFixed(2);
-
   }
 
   async onSubmit(event) {
@@ -164,4 +177,3 @@ export default class Cart {
     this.cartIcon.elem.onclick = () => this.renderModal();
   }
 }
-
